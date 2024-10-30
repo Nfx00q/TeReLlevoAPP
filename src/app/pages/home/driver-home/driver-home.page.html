@@ -17,6 +17,8 @@
 
     <div id="map" class="map"></div>
 
+    <div id="time-estimate" class="time-estimate"><span id="duration">--</span></div>
+
     <ion-fab slot="fixed" vertical="bottom" horizontal="start">
       <ion-fab-button color="dark">
         <ion-icon name="add"></ion-icon>
@@ -36,24 +38,46 @@
 
   </body>
 
-  <ion-modal #modal trigger="op-modal" [initialBreakpoint]="0.6" [breakpoints]="[0.8]">
+  <ion-modal #modal trigger="op-modal" [initialBreakpoint]="0.6" [breakpoints]="[0.85]" class="iniciarViaje">
     <ng-template>
       <ion-content>
-        <h1 style="text-align: center;">Escanear viaje</h1>
-        <p>Presiona Escanear QR para escanear un viaje creado por algún conductor.</p>
+        <h1 style="text-align: center;">Iniciar viaje</h1>
+        <p>Selecciona tu ubicación de inicio y destino para comenzar a buscar un conductor cercano.</p>
+  
+        <ion-item lines="none">
+          <ion-select [(ngModel)]="ubicacionInicio" (ionChange)="onInicioChange()" label="Ubicación inicio" label-placement="stacked">
+            <ion-select-option *ngFor="let ubicacion of ubicaciones" [value]="ubicacion.value">
+              {{ ubicacion.label }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
+        
+        <ion-item lines="none">
+          <ion-select [(ngModel)]="ubicacionDestino" label="Ubicación destino" label-placement="stacked">
+            <ion-select-option *ngFor="let ubicacion of getOpcionesDestino()" [value]="ubicacion.value">
+              {{ ubicacion.label }}
+            </ion-select-option>
+          </ion-select>
+        </ion-item>
   
         <ion-grid>
           <ion-row>
-            <ion-col>
-              <ion-button expand="block" color="light">
-                Escanear QR
-                <ion-icon slot="start" name="scan-outline"></ion-icon>
+            <ion-col size="9">
+              <ion-button expand="block" color="dark" (click)="startTrip()">
+                Iniciar viaje
+              </ion-button>
+            </ion-col>
+            <ion-col size="3">
+              <ion-button expand="block" color="danger">
+                <ion-icon name="close-circle-outline"></ion-icon>
               </ion-button>
             </ion-col>
           </ion-row>
         </ion-grid>
 
-        <div id="reader" style="width: 300px; height: 300px;"></div>
+        <div class="userTripQR">
+          <qrcode *ngIf="codigoViaje" [qrdata]="qrViaje" [width]="180" [errorCorrectionLevel]="'M'"></qrcode>
+        </div>
         
       </ion-content>
     </ng-template>

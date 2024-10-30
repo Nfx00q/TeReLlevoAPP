@@ -10,6 +10,7 @@ export interface Usuario {
     pass?: string;
     tipo?: string;
     disabled?: boolean;
+    nom_pasajero?: string;
 
     activo?: boolean;
 }

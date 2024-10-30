@@ -6,6 +6,8 @@ import { Usuario } from 'src/app/interfaces/usuario';
 import { Viajes } from 'src/app/interfaces/viajes';
 import { ViajesService } from 'src/app/services/viejes.service';
 
+import { QRCodeModule } from 'angularx-qrcode';
+
 declare var google: any;
 
 @Component({
@@ -33,6 +35,10 @@ export class DriverPage implements OnInit, AfterViewInit {
   usuarioLogin?: string;
   usuarios: Usuario[] = [];
 
+  /* -------- RENDER -------- */
+
+  private renderers: any[] = [];
+
   public nombreUsuario?: string;
   public apellidoUsuario?: string;
   public img_usuario?: string;
@@ -45,10 +51,13 @@ export class DriverPage implements OnInit, AfterViewInit {
     { lat: -33.56692284768454, lng: -70.63052933119687, icon: 'assets/icon/stop.png', label: 'TL-3 / Av. Observatorio & Av. Sta. Rosa', value: 'tl3' },
   ];
 
+  qrViaje: string = '';
+
   constructor(
     private router: Router,
     private firestore: AngularFirestore,
-    private viajesService: ViajesService) { }
+    private viajesService: ViajesService,
+    private QrCodeModule: QRCodeModule) { }
 
   ngAfterViewInit(){}
 
@@ -192,6 +201,215 @@ export class DriverPage implements OnInit, AfterViewInit {
         document.body.appendChild(script);
       }
     });
+  }
+
+  /* ----- INICIAR VIAJE ----- */
+
+  startTrip() {
+    if (this.ubicacionInicio && this.ubicacionDestino) {
+      const inicio = this.ubicaciones.find((ubicacion) => ubicacion.value === this.ubicacionInicio);
+      const destino = this.ubicaciones.find((ubicacion) => ubicacion.value === this.ubicacionDestino);
+  
+      if (inicio && destino) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const pos = {
+              lat: position.coords.latitude,
+              lng: position.coords.longitude,
+            };
+  
+            // Clear previous routes
+            this.renderers.forEach((renderer) => renderer.setMap(null));
+            this.renderers = [];
+  
+            // Route from user's current location to starting point (Walking)
+          const request1 = {
+            origin: pos,
+            destination: { lat: inicio.lat, lng: inicio.lng },
+            travelMode: google.maps.TravelMode.WALKING,
+          };
+
+          // Route from starting point to destination (Driving)
+          const request2 = {
+            origin: { lat: inicio.lat, lng: inicio.lng },
+            destination: { lat: destino.lat, lng: destino.lng },
+            travelMode: google.maps.TravelMode.DRIVING,
+          };
+
+          this.directionsService.route(request1, (result: any, status: any) => {
+            if (status === google.maps.DirectionsStatus.OK) {
+              // Render the walking route
+              const walkingRenderer = new google.maps.DirectionsRenderer({
+                suppressMarkers: true,
+                polylineOptions: {
+                  strokeColor: '#242424',
+                  strokeWeight: 6,
+                },
+              });
+              walkingRenderer.setMap(this.map);
+              walkingRenderer.setDirections(result);
+
+              // Calculate the route for the vehicle and show duration
+              this.directionsService.route(request2, (result2: any, status2: any) => {
+                if (status2 === google.maps.DirectionsStatus.OK) {
+                  const drivingRenderer = new google.maps.DirectionsRenderer({
+                    suppressMarkers: true,
+                    polylineOptions: {
+                      strokeColor: '#000000',
+                      strokeWeight: 6,
+                    },
+                  });
+                  drivingRenderer.setMap(this.map);
+                  drivingRenderer.setDirections(result2);
+
+                  // Access estimated time
+                  const duration = result2.routes[0].legs[0].duration;
+                  const durationText = duration.text;
+
+                  // Display the estimated time in your HTML element with ID 'duration'
+                  const durationElement = document.getElementById('duration');
+                  if (durationElement) {
+                    durationElement.innerText = `Estimated travel time: ${durationText}`;
+                  }
+                  console.log(`Estimated travel time: ${durationText}`);
+                } else {
+                  console.error('Error calculating route from starting point to destination', status2);
+                }
+              });
+            } else {
+              console.error('Error calculating route from current location to starting point', status);
+            }
+          });
+  
+            // Create two instances of DirectionsRenderer
+            const walkingRenderer = new google.maps.DirectionsRenderer({
+              suppressMarkers: true,
+              polylineOptions: {
+                strokeColor: 'rgba(0,0,0,0)',
+                strokeWeight: 6,
+                strokeOpacity: 0.7,
+                geodesic: true,
+                icons: [{
+                  icon: {
+                    path: google.maps.SymbolPath.CIRCLE,
+                    scale: 2,
+                    fillColor: '#242424',
+                    fillOpacity: 1,
+                    strokeColor: '#242424',
+                    strokeOpacity: 1
+                  },
+                  offset: '0%',
+                  repeat: '8px'
+                }]
+              }
+            });
+  
+            const drivingRenderer = new google.maps.DirectionsRenderer({
+              suppressMarkers: true,
+              polylineOptions: {
+                strokeColor: '#000000',
+                strokeWeight: 6,
+                strokeOpacity: 0.7,
+                geodesic: true,
+              }
+            });
+  
+            // Set map for each renderer
+            walkingRenderer.setMap(this.map);
+            drivingRenderer.setMap(this.map);
+  
+            // Store the renderers in the array
+            this.renderers.push(walkingRenderer);
+            this.renderers.push(drivingRenderer);
+  
+            // Calculate the first route
+            this.directionsService.route(request1, (result: any, status: any) => {
+              if (status === google.maps.DirectionsStatus.OK) {
+                walkingRenderer.setDirections(result);
+              } else {
+                console.error('Error calculating route from current location to starting point', status);
+              }
+            });
+  
+            // Calculate the route for the vehicle
+            this.directionsService.route(request2, (result: any, status: any) => {
+              if (status === google.maps.DirectionsStatus.OK) {
+                this.directionsRenderer.setDirections(result);
+  
+                // Access estimated time
+                const duration = result.routes[0].legs[0].duration;
+                const durationText = duration.text;
+  
+                // Get the element and check if it exists
+                const durationElement = document.getElementById('duration');
+                if (durationElement) {
+                  durationElement.innerText = durationText;
+                } else {
+                  console.error('Element with ID "duration" not found.');
+                }
+  
+                console.log(`Estimated travel time: ${durationText}`);
+  
+                this.directionsRenderer.setOptions({
+                  suppressMarkers: true,
+                  polylineOptions: {
+                    strokeColor: '#000000',
+                    strokeWeight: 6,
+                    strokeOpacity: 0.7,
+                    geodesic: true,
+                    icons: [{
+                      icon: {
+                        path: google.maps.SymbolPath.CIRCLE,
+                        scale: 2,
+                        fillColor: '#000000',
+                        fillOpacity: 1,
+                        strokeColor: '#000000',
+                        strokeOpacity: 1
+                      },
+                      offset: '0%',
+                      repeat: '20px'
+                    }]
+                  }
+                });
+              } else {
+                console.error('Error calculating route from starting point to destination', status);
+              }
+            });
+  
+            // Save trip to Firebase
+            const nuevoViaje: Viajes = {
+              codigo: this.viajesService.generarCodigoUnico(),
+              nom_destino: destino.label,
+              nom_inicio: inicio.label,
+              fecha: new Date().toISOString(),
+            nom_pasajero: this.nombreUsuario ?? 'Desconocido',
+              coordenada: JSON.stringify(pos),
+              coordenada_destino: JSON.stringify({ lat: destino.lat, lng: destino.lng }),
+            };
+  
+            console.log(`Trip created successfully. Trip code: ${this.codigoViaje}`);
+  
+            // Subscribe to the Observable to save in Firebase and update the trip code
+            this.viajesService.crearViaje(nuevoViaje).subscribe({
+              next: (codigo) => {
+                this.codigoViaje = codigo; // Update with the returned code
+                console.log(`Trip created successfully. Trip code: ${this.codigoViaje}`);
+                this.qrViaje = this.codigoViaje; // Now the QR will reflect the correct code
+              },
+              error: (error) => {
+                console.error('Error saving the trip:', error);
+              },
+            });
+            
+          },
+          () => {
+            console.error('Error getting current location.');
+          }
+        );
+      } else {
+        console.log('Please select both locations.');
+      }
+    }
   }
 
   onInicioChange() {
