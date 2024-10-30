@@ -1,6 +1,7 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
 import { ConfigPagePageModule } from './pages/home/user-home/config-page/config-page.module';
+import { UserInfoPageModule } from './pages/admin-dash/user-info/user-info.module';
 
 const routes: Routes = [
   {
@@ -39,6 +40,10 @@ const routes: Routes = [
   {
     path: 'config-page',
     loadChildren: () => import('./pages/home/user-home/config-page/config-page.module').then(m => ConfigPagePageModule)
+  },
+  {
+    path: 'user-info',
+    loadChildren: () => import('./pages/admin-dash/user-info/user-info.module').then(m => UserInfoPageModule)
   }
 ];
 
