@@ -1,3 +1,4 @@
+import { DriverPage } from './../home/driver-home/driver-home.page';
 import { Component, OnInit } from '@angular/core';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
@@ -68,7 +69,7 @@ export class LogInPage implements OnInit {
             } else if (data.tipo === 'usuario') {
               this.router.navigate(['/user-home']);
             } else if (data.tipo === 'conductor') {
-              this.router.navigate(['/drivers']);
+              this.router.navigate(['/DriverPage']);
             }
           }
         });
