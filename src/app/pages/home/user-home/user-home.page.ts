@@ -5,7 +5,6 @@ import { Usuario } from 'src/app/interfaces/usuario';
 import { Geolocation } from '@capacitor/geolocation';
 import { Router } from '@angular/router';
 import Swal from 'sweetalert2';
-import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
 
 
 declare var google: any;
