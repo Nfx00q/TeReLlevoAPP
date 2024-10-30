@@ -68,7 +68,8 @@ export class LogInPage implements OnInit {
             } else if (data.tipo === 'usuario') {
               this.router.navigate(['/user-home']);
             } else if (data.tipo === 'conductor') {
-              this.router.navigate(['/drivers']);
+              data.activo = true;
+              this.router.navigate(['/driver-home']);
             }
           }
         });
@@ -86,55 +87,64 @@ export class LogInPage implements OnInit {
       message: 'Cargando.....',
       duration: 2000,
     });
-    
+
     try {
-      await loading.present();
+        await loading.present();
 
-      const email = this.emailValue;
-      const pass = this.passValue;
+        const email = this.emailValue;
+        const pass = this.passValue;
 
-      const aux = await this.authService.login(email, pass);
+        // Intentar iniciar sesión
+        const aux = await this.authService.login(email, pass);
 
-      if (aux.user) {
-        const usuarioLogin = await this.firestore.collection('usuarios').doc(aux.user.uid).get().toPromise();
-        const usuarioData = usuarioLogin?.data() as Usuario;
+        if (aux.user) {
+            // Obtener datos del usuario desde Firestore
+            const usuarioLogin = await this.firestore.collection('usuarios').doc(aux.user.uid).get().toPromise();
+            const data = usuarioLogin?.data() as Usuario;
 
-        if (usuarioData.disabled) {
-          Swal.fire({
+            // Verificar si la cuenta está deshabilitada
+            if (data.disabled) {
+                Swal.fire({
+                    icon: 'error',
+                    title: 'Cuenta deshabilitada',
+                    text: 'Tu cuenta está deshabilitada. Por favor, contacta al soporte.',
+                    confirmButtonText: 'OK',
+                    heightAuto: false,
+                });
+                return;
+            }
+
+            // Almacenar información del usuario en localStorage
+            localStorage.setItem('usuarioLogin', JSON.stringify({ email, uid: aux.user.uid }));
+
+            // Manejar la navegación según el tipo de usuario
+            if (data) {
+                if (data.tipo === 'admin') {
+                    this.router.navigate(['/admin-dash']);
+                } else if (data.tipo === 'usuario') {
+                    this.router.navigate(['/user-home']);
+                } else if (data.tipo === 'conductor') {
+                    // Actualizar el estado activo en Firestore
+                    await this.firestore.collection('usuarios').doc(aux.user.uid).update({ activo: true });
+                    this.router.navigate(['/driver-home']);
+                }
+            }
+        }
+    } catch (error) {
+        console.error('Error en el inicio de sesión:', error);
+        Swal.fire({
             icon: 'error',
-            title: 'Cuenta deshabilitada',
-            text: 'Tu cuenta está deshabilitada. Por favor, contacta al soporte.',
+            title: 'Error',
+            text: 'Hubo un error al iniciar sesión. Verifica tus credenciales.',
             confirmButtonText: 'OK',
             heightAuto: false,
-          });
-          return;
-        }
-
-        localStorage.setItem('usuarioLogin', JSON.stringify({ email, uid: aux.user.uid }));
-
-        if (usuarioData.tipo === 'admin') {
-          this.router.navigate(['/admin-dash']);
-        } else if (usuarioData.tipo === 'usuario') {
-          this.router.navigate(['/user-home']);
-        } else if (usuarioData.tipo === 'conductor') {
-          this.router.navigate(['/drivers']);
-        }
-      }
-    } catch (error) {
-      console.error('Error en el inicio de sesión:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Hubo un error al iniciar sesión. Verifica tus credenciales.',
-        confirmButtonText: 'OK',
-        heightAuto: false,
-      });
-      this.emailValue = '';
-      this.passValue = '';
+        });
+        this.emailValue = '';
+        this.passValue = '';
     } finally {
-      loading.dismiss();
+        loading.dismiss();
     }
-  }  
+  }
 
   /* ----- Reset PASSWORD ----- */
 

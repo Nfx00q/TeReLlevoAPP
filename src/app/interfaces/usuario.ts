@@ -10,4 +10,6 @@ export interface Usuario {
     pass?: string;
     tipo?: string;
     disabled?: boolean;
+
+    activo?: boolean;
 }
