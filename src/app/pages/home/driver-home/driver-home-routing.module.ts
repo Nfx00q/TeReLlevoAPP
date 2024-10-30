@@ -1,11 +1,11 @@
 import { NgModule } from '@angular/core';
 import { Routes, RouterModule } from '@angular/router';
-import { DriverHomePageModule } from './driver-home.module';
+import { DriverPage } from './driver-home.page';
 
 const routes: Routes = [
   {
     path: '',
-    component: DriverHomePageModule
+    component: DriverPage
   }
 ];
 

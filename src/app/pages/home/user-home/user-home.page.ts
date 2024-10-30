@@ -51,6 +51,17 @@ export class UserHomePage implements OnInit {
     });
   }
 
+  /* ----- CARGA DE USERS ----- */
+
+  async cargarUsuarios() {
+    try {
+      const usuariosSnapshot = await this.firestore.collection<Usuario>('usuarios', ref => ref.where('activo', '==', true)).get().toPromise();
+      this.usuarios = usuariosSnapshot?.docs.map(doc => ({ id: doc.id, ...doc.data() })) as Usuario[];
+    } catch (error) {
+      console.error('Error al cargar usuarios:', error);
+    }
+  }
+
   /* ----- SCANEO QR ----- */
 
   async initMap() {

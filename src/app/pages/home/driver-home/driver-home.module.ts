@@ -5,7 +5,6 @@ import { FormsModule } from '@angular/forms';
 import { IonicModule } from '@ionic/angular';
 
 import { DriverHomePageRoutingModule } from './driver-home-routing.module';
-
 import { DriverPage } from './driver-home.page';
 
 @NgModule({

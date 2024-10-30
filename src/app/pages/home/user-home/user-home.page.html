@@ -25,8 +25,8 @@
         <ion-fab-button color="dark" (click)="goToConfig()">
           <ion-icon name="settings-outline"></ion-icon>
         </ion-fab-button>
-        <ion-fab-button color="dark">
-          <ion-icon name="book-outline"></ion-icon>
+        <ion-fab-button color="dark" id="op-modal-2">
+          <ion-icon name="person"></ion-icon>
         </ion-fab-button>
         <ion-fab-button color="dark" id="op-modal">
           <ion-icon name="trail-sign-outline"></ion-icon>
@@ -36,7 +36,7 @@
 
   </body>
 
-  <ion-modal #modal trigger="op-modal" [initialBreakpoint]="0.6" [breakpoints]="[0.8]">
+  <ion-modal #modal trigger="op-modal" [initialBreakpoint]="0.6" [breakpoints]="[0.8]" class="iniciarViaje">
     <ng-template>
       <ion-content>
         <h1 style="text-align: center;">Escanear viaje</h1>
@@ -54,6 +54,40 @@
         </ion-grid>
 
         <div id="reader" style="width: 300px; height: 300px;"></div>
+        
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+
+  <ion-modal #modal trigger="op-modal-2" [initialBreakpoint]="0.6" [breakpoints]="[0.8]" class="driversDisponibles">
+    <ng-template>
+      <ion-content>
+        <h1 style="text-align: center;">Conductores disponibles</h1>
+        <p>Selecciona el conductor de tu interés</p>
+
+        <ion-list [inset]="true">
+          <ng-container *ngFor="let usuario of usuarios">
+            <ion-item-sliding *ngIf="usuario.activo"> <!-- Usar solo *ngIf aquí -->
+              <ion-item [button]="true">
+                <ion-avatar aria-hidden="true" slot="start">
+                  <img [src]="usuario.img_usuario || 'https://ionicframework.com/docs/img/demos/avatar.svg'" alt="Avatar" />
+                </ion-avatar>
+                <ion-label>{{ usuario.nombre }} {{ usuario.apellido }}</ion-label>
+              </ion-item>
+              <ion-item-options slot="end">
+                <ion-item-option color="warning">
+                  <ion-icon slot="icon-only" name="pin"></ion-icon>
+                </ion-item-option>
+                <ion-item-option color="tertiary">
+                  <ion-icon slot="icon-only" name="share"></ion-icon>
+                </ion-item-option>
+                <ion-item-option color="danger" expandable="true">
+                  <ion-icon slot="icon-only" name="trash"></ion-icon>
+                </ion-item-option>
+              </ion-item-options>
+            </ion-item-sliding>
+          </ng-container>
+        </ion-list>                      
         
       </ion-content>
     </ng-template>

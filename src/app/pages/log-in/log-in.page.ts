@@ -69,7 +69,7 @@ export class LogInPage implements OnInit {
             } else if (data.tipo === 'usuario') {
               this.router.navigate(['/user-home']);
             } else if (data.tipo === 'conductor') {
-              this.router.navigate(['/drivers']);
+              this.router.navigate(['/driver-home']);
             }
           }
         });

@@ -4,6 +4,7 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { finalize, Observable } from 'rxjs';
 import { AngularFireStorage } from '@angular/fire/compat/storage';
 import { Usuario } from '../interfaces/usuario';
+import { Router } from '@angular/router';
 
 @Injectable({
   providedIn: 'root'
@@ -13,7 +14,8 @@ export class AuthServiceService {
   constructor(
     private angularFireAuth : AngularFireAuth, 
     private firestore: AngularFirestore,
-    private storage: AngularFireStorage
+    private storage: AngularFireStorage,
+    private router: Router
   ){}
 
   getUsers(): Observable<Usuario[]> { // Cambiar a Usuario[]
@@ -50,8 +52,26 @@ export class AuthServiceService {
   }
 
   async logOut() {
-    await this.angularFireAuth.signOut();  // Asegúrate de cerrar sesión en el servicio de autenticación.
-    localStorage.removeItem('usuarioLogin');  // Elimina el usuario almacenado en localStorage.
+    try {
+      const usuarioLogin = JSON.parse(localStorage.getItem('usuarioLogin') || '{}');
+      const uid = usuarioLogin.uid; // Obtén el UID del usuario almacenado
+      const usuarioDoc = await this.firestore.collection('usuarios').doc(uid).get().toPromise();
+      const data = usuarioDoc?.data() as Usuario; // Asegúrate de que Usuario esté importado
+  
+      if (data && data.tipo === 'conductor') {
+        // Actualiza el estado "activo" a false
+        await this.firestore.collection('usuarios').doc(uid).update({ activo: false });
+      }
+  
+      await this.angularFireAuth.signOut();  // Cierra sesión en el servicio de autenticación.
+      localStorage.removeItem('usuarioLogin');  // Elimina el usuario almacenado en localStorage.
+  
+      // Opcional: Puedes redirigir al usuario a la página de inicio o login
+      this.router.navigate(['/log-in']); 
+    } catch (error) {
+      console.error('Error al cerrar sesión:', error);
+      // Manejo de errores (opcional)
+    }
   }
   
   async resetPassword(email: string) {
