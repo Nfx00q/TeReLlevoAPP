@@ -4,6 +4,9 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Usuario } from 'src/app/interfaces/usuario';
 import { Geolocation } from '@capacitor/geolocation';
 import { Router } from '@angular/router';
+import Swal from 'sweetalert2';
+import { BarcodeScanner } from '@capacitor-community/barcode-scanner';
+
 
 declare var google: any;
 
@@ -14,6 +17,7 @@ declare var google: any;
 })
 
 export class UserHomePage implements OnInit {
+  
   usuarios: Usuario[] = [];
   public nombreUsuario?: string;
   public apellidoUsuario?: string;
@@ -47,6 +51,8 @@ export class UserHomePage implements OnInit {
       this.initMap();
     });
   }
+
+  /* ----- SCANEO QR ----- */
 
   async initMap() {
     const mapOptions = {

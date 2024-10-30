@@ -81,89 +81,58 @@ export class LogInPage implements OnInit {
   
   /* ----- LOGIN ----- */
 
-  async logInWithGoogle() {
-    try {
-      await this.authService.loginWithGoogle();
-      // Aquí puedes manejar el redireccionamiento después del inicio de sesión
-    } catch (error) {
-      console.error('Error en el inicio de sesión con Google:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Hubo un error al iniciar sesión con Google.',
-        confirmButtonText: 'OK',
-        heightAuto: false
-      });
-    }
-  }
-  
-  async logInWithGitHub() {
-    try {
-      await this.authService.loginWithGithub();
-    } catch (error) {
-      console.error('Error en el inicio de sesión con GitHub:', error);
-      Swal.fire({
-        icon: 'error',
-        title: 'Error',
-        text: 'Hubo un error al iniciar sesión con GitHub.',
-        confirmButtonText: 'OK',
-        heightAuto: false
-      });
-    }
-  }
-  
   async logIn() {
+    const loading = await this.loadingController.create({
+      message: 'Cargando.....',
+      duration: 2000,
+    });
+    
     try {
-      const loading = await this.loadingController.create({
-        message: 'Cargando.....',
-        duration: 2000
-      });
-  
+      await loading.present();
+
       const email = this.emailValue;
       const pass = this.passValue;
-  
-      const aux = await this.authService.login(email as string, pass as string);
-  
+
+      const aux = await this.authService.login(email, pass);
+
       if (aux.user) {
         const usuarioLogin = await this.firestore.collection('usuarios').doc(aux.user.uid).get().toPromise();
         const usuarioData = usuarioLogin?.data() as Usuario;
-  
+
         if (usuarioData.disabled) {
           Swal.fire({
             icon: 'error',
             title: 'Cuenta deshabilitada',
             text: 'Tu cuenta está deshabilitada. Por favor, contacta al soporte.',
             confirmButtonText: 'OK',
-            heightAuto: false
+            heightAuto: false,
           });
           return;
         }
-  
+
         localStorage.setItem('usuarioLogin', JSON.stringify({ email, uid: aux.user.uid }));
-        (await loading).present();
-  
-        setTimeout(async () => {
-          (await loading).dismiss();
-          if (usuarioData.tipo === 'admin') {
-            this.router.navigate(['/admin-dash']);
-          } else if (usuarioData.tipo === 'usuario') {
-            this.router.navigate(['/user-home']);
-          } else if (usuarioData.tipo === 'conductor') {
-            this.router.navigate(['/drivers']);
-          }
-        }, 2000);
+
+        if (usuarioData.tipo === 'admin') {
+          this.router.navigate(['/admin-dash']);
+        } else if (usuarioData.tipo === 'usuario') {
+          this.router.navigate(['/user-home']);
+        } else if (usuarioData.tipo === 'conductor') {
+          this.router.navigate(['/drivers']);
+        }
       }
     } catch (error) {
       console.error('Error en el inicio de sesión:', error);
       Swal.fire({
         icon: 'error',
         title: 'Error',
-        text: 'Hubo un error al iniciar sesión.',
+        text: 'Hubo un error al iniciar sesión. Verifica tus credenciales.',
         confirmButtonText: 'OK',
-        heightAuto: false
+        heightAuto: false,
       });
       this.emailValue = '';
       this.passValue = '';
+    } finally {
+      loading.dismiss();
     }
   }  
 

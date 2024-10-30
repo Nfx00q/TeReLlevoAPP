@@ -1,5 +1,6 @@
 import { NgModule } from '@angular/core';
 import { PreloadAllModules, RouterModule, Routes } from '@angular/router';
+import { ConfigPagePageModule } from './pages/home/user-home/config-page/config-page.module';
 
 const routes: Routes = [
   {
@@ -34,6 +35,10 @@ const routes: Routes = [
   {
     path: 'account',
     loadChildren: () => import('./pages/home/user-home/config-page/account/account.module').then( m => m.AccountPageModule)
+  },
+  {
+    path: 'config-page',
+    loadChildren: () => import('./pages/home/user-home/config-page/config-page.module').then(m => ConfigPagePageModule)
   }
 ];
 

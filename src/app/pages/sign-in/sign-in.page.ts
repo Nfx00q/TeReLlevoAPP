@@ -39,7 +39,7 @@ export class SignInPage implements OnInit {
       email: ['', [Validators.required, Validators.email]],
       pass: ['', [Validators.required, Validators.minLength(6)]],
       repass: ['', [Validators.required, Validators.minLength(6)]],
-      accountType: ['', [Validators.required]]
+      tipoCuenta: ['', [Validators.required]]
     });
   }
 
@@ -51,7 +51,7 @@ export class SignInPage implements OnInit {
     const email = this.registerForm.get('email')?.value.trim() || '';
     const pass = this.registerForm.get('pass')?.value.trim() || '';
     const repass = this.registerForm.get('repass')?.value || '';
-    const accountType = this.registerForm.get('accountType')?.value || 'usuario'; // Capturar el tipo de cuenta
+    const tipoCuenta = this.registerForm.get('tipoCuenta')?.value || 'usuario'; // Capturar el tipo de cuenta
     
     if (pass !== repass) {
       const toast = await this.toastController.create({
@@ -74,7 +74,7 @@ export class SignInPage implements OnInit {
           apellido: this.registerForm.get('lastName')?.value,
           email: user.email,
           pass: pass,
-          tipo: accountType // Guardar el tipo de cuenta (usuario o conductor)
+          tipo: tipoCuenta // Guardar el tipo de cuenta (usuario o conductor)
         });
   
         Swal.fire({

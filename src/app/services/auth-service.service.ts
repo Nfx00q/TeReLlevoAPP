@@ -3,36 +3,17 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { finalize, Observable } from 'rxjs';
 import { AngularFireStorage } from '@angular/fire/compat/storage';
-import * as firebase from 'firebase/compat/app';
-
-import { getAuth, GoogleAuthProvider, GithubAuthProvider, signInWithPopup } from 'firebase/auth';
-import { initializeApp } from 'firebase/app';
-import { environment } from 'src/environments/environment.prod';
 
 @Injectable({
   providedIn: 'root'
 })
 export class AuthServiceService {
 
-  private auth = getAuth(initializeApp(environment.firebaseConfig));
-
   constructor(
     private angularFireAuth : AngularFireAuth, 
     private firestore: AngularFirestore,
     private storage: AngularFireStorage
   ){}
-
-  // Método de inicio de sesión con Google
-  async loginWithGoogle() {
-    const provider = new GoogleAuthProvider();
-    return signInWithPopup(this.auth, provider);
-  }
-
-  // Método de inicio de sesión con GitHub
-  async loginWithGithub() {
-    const provider = new GithubAuthProvider();
-    return signInWithPopup(this.auth, provider);
-  }
 
   getUsers(): Observable<any[]> {
     return this.firestore.collection('usuarios').valueChanges();
@@ -54,7 +35,7 @@ export class AuthServiceService {
     return this.firestore.collection('usuarios').doc(uid).update({ disabled: true });
   }
 
-  login(email: string, pass: string){
+  login(email: string, pass: string) {
     return this.angularFireAuth.signInWithEmailAndPassword(email, pass);
   }
 
