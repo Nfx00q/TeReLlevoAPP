@@ -64,7 +64,6 @@
       <ion-content>
         <h1 style="text-align: center;">Conductores disponibles</h1>
         <p>Selecciona el conductor de tu interés</p>
-
         <ul class="user-list">
           <ng-container *ngFor="let usuario of usuarios">
             <ng-container *ngIf="usuario.activo">
@@ -73,8 +72,8 @@
                   <img [src]="usuario.img_usuario || 'https://ionicframework.com/docs/img/demos/avatar.svg'" alt="Avatar" />
                 </div>
                 <div class="user-info">
-                  <span class="user-name">{{ usuario.nombre }} {{ usuario.apellido }}</span>
-                  <label class="user-age">{{ usuario.edad }}</label>
+                  <span class="user-name">{{ usuario.nombre }} {{ usuario.apellido }}<br></span>
+                  <b style="color: rgb(0, 255, 0); padding-right: 10px; font-size: 12px;">Activo</b><label class="user-age">Edad: {{ usuario.edad }} años.</label>
                 </div>
               </li>
             </ng-container>

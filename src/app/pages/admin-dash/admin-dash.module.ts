@@ -8,6 +8,8 @@ import { AdminDashPageRoutingModule } from './admin-dash-routing.module';
 
 import { AdminDashPage } from './admin-dash.page';
 
+import { EditModalComponent } from './edit-modal/edit-modal.component';
+
 @NgModule({
   imports: [
     CommonModule,
@@ -15,6 +17,6 @@ import { AdminDashPage } from './admin-dash.page';
     IonicModule,
     AdminDashPageRoutingModule
   ],
-  declarations: [AdminDashPage]
+  declarations: [AdminDashPage, EditModalComponent]
 })
 export class AdminDashPageModule {}
