@@ -4,7 +4,7 @@ import { Geolocation } from '@capacitor/geolocation';
 import { AngularFirestore } from '@angular/fire/compat/firestore'
 import { Usuario } from 'src/app/interfaces/usuario';
 import { Viajes } from 'src/app/interfaces/viajes';
-import { ViajesService } from 'src/app/services/viejes.service';
+import { ViajesService } from 'src/app/services/viajes.service';
 
 declare var google: any;
 
@@ -45,6 +45,9 @@ export class DriverPage implements OnInit, AfterViewInit {
     { lat: -33.56692284768454, lng: -70.63052933119687, icon: 'assets/icon/stop.png', label: 'TL-3 / Av. Observatorio & Av. Sta. Rosa', value: 'tl3' },
   ];
 
+  qrData: string = '';
+  qrViaje: string = '';
+
   constructor(
     private router: Router,
     private firestore: AngularFirestore,
@@ -54,11 +57,16 @@ export class DriverPage implements OnInit, AfterViewInit {
 
   ngOnInit() {
     this.usuarioLogin = localStorage.getItem('usuarioLogin') || '';
+
+    // Recupera nombre y apellido del localStorage
+    this.nombreUsuario = localStorage.getItem('nombreUsuario') || 'Desconocido';
+    this.apellidoUsuario = localStorage.getItem('apellidoUsuario') || '';
+    
     this.config();
     this.loadGoogleMaps().then(() => {
       this.initMap();
     });
-  }
+  }  
 
   /* ----- Subscripción a la COLECCION DE USUARIOS -----*/
 
@@ -83,101 +91,30 @@ export class DriverPage implements OnInit, AfterViewInit {
       disableDefaultUI: true,
       styles: [{ featureType: "poi", stylers: [{ visibility: "off" }] }, { featureType: "road", stylers: [{ visibility: "on" }] }],
     };
-
+  
     this.map = new google.maps.Map(document.getElementById('map'), mapOptions);
     this.directionsService = new google.maps.DirectionsService();
     this.directionsRenderer = new google.maps.DirectionsRenderer({ suppressMarkers: true, polylineOptions: { strokeColor: '#242424', strokeWeight: 8 } });
     this.directionsRenderer.setMap(this.map);
-
+  
     const position = await Geolocation.getCurrentPosition();
     const pos = { lat: position.coords.latitude, lng: position.coords.longitude };
-
+  
+    this.addMarker(pos, 'Your location', 'assets/icon/ubi.png');
+  
+    this.ubicaciones.forEach((ubicacion) => {
+      this.addMarker({ lat: ubicacion.lat, lng: ubicacion.lng }, ubicacion.label, ubicacion.icon);
+    });
+  }
+  
+  addMarker(position: { lat: number; lng: number }, title: string, iconUrl: string) {
     new google.maps.Marker({
-      position: pos,
+      position,
       map: this.map,
-      title: "Your location",
-      icon: { url: 'assets/icon/ubi.png', scaledSize: new google.maps.Size(50, 50) },
+      title,
+      icon: { url: iconUrl, scaledSize: new google.maps.Size(40, 40) },
     });
-
-    this.map.setCenter(pos);
-
-    this.ubicaciones.forEach((ubicacion) => {
-      const marker = new google.maps.Marker({
-        position: { lat: ubicacion.lat, lng: ubicacion.lng },
-        map: this.map,
-        icon: { url: ubicacion.icon, scaledSize: new google.maps.Size(40, 40) },
-        title: ubicacion.label,
-      });
-
-      const infoWindow = new google.maps.InfoWindow({ content: `<p>${ubicacion.label}</p>` });
-      marker.addListener('click', () => infoWindow.open(this.map, marker));
-    });
-
-    this.directionsService = new google.maps.DirectionsService();
-    this.directionsRenderer = new google.maps.DirectionsRenderer({
-      suppressMarkers: true,
-      polylineOptions: {
-        strokeColor: '#242424',
-        strokeWeight: 5,       
-      },
-    });
-  
-    this.directionsRenderer.setMap(this.map);
-
-    if (navigator.geolocation) {
-      navigator.geolocation.getCurrentPosition(
-          (position) => {
-              const pos = {
-                  lat: position.coords.latitude,
-                  lng: position.coords.longitude,
-              };
-  
-              new google.maps.Marker({
-                  position: pos,
-                  map: this.map,
-                  title: "Tu ubicación actual",
-                  icon: {
-                      url: 'assets/icon/ubi.png',
-                      scaledSize: new google.maps.Size(50, 50),
-                  },
-              });
-  
-              this.map.setCenter(pos);
-          },
-          () => {
-              handleLocationError(true, this.map.getCenter());
-          }
-      );
-  } else {
-      handleLocationError(false, this.map.getCenter());
-  }
-
-    function handleLocationError(browserHasGeolocation: boolean, pos: any) {
-      alert(browserHasGeolocation
-          ? "Error: El servicio de geolocalización ha fallado."
-          : "Error: Tu navegador no soporta la geolocalización.");
-    }
-
-    this.ubicaciones.forEach((ubicacion) => {
-      const marker = new google.maps.Marker({
-        position: { lat: ubicacion.lat, lng: ubicacion.lng },
-        map: this.map,
-        icon: {
-          url: ubicacion.icon,
-          scaledSize: new google.maps.Size(40, 40),
-        },
-        title: ubicacion.label,
-      });
-  
-      const infoWindow = new google.maps.InfoWindow({
-        content: `<p>${ubicacion.label}</p>`,
-      });
-  
-      marker.addListener('click', () => {
-        infoWindow.open(this.map, marker);
-      });
-    });
-  }
+  }  
 
   loadGoogleMaps(): Promise<any> {
     return new Promise((resolve) => {
@@ -199,6 +136,63 @@ export class DriverPage implements OnInit, AfterViewInit {
       this.ubicacionDestino = null;
     }
   }
+  
+  async startTrip() {
+    const inicio = this.ubicaciones.find((ubicacion) => ubicacion.value === this.ubicacionInicio);
+    const destino = this.ubicaciones.find((ubicacion) => ubicacion.value === this.ubicacionDestino);
+    
+    if (inicio && destino) {
+      const currentPosition = await Geolocation.getCurrentPosition();
+      const pos = { lat: currentPosition.coords.latitude, lng: currentPosition.coords.longitude };
+  
+      const codigoViaje = this.viajesService.generarCodigoUnico();
+
+      const driverName = `${this.nombreUsuario || 'Desconocido'} ${this.apellidoUsuario || ''}`.trim();
+  
+      const viaje: Viajes = {
+        codigo: codigoViaje,
+        nom_inicio: inicio.label || '',
+        nom_destino: destino.label || '',
+        inicio: `${pos.lat},${pos.lng}`, 
+        fecha: new Date().toISOString(),
+        coordenada: `${pos.lat},${pos.lng}`, 
+        coordenada_destino: `${destino.lat},${destino.lng}`,
+        driverName: driverName 
+      };      
+  
+      this.viajesService.crearViaje(viaje).subscribe({
+        next: (docId) => {
+          console.log('Viaje creado con ID:', docId);
+          this.codigoViaje = codigoViaje;
+          this.qrViaje = codigoViaje;
+          this.qrData = this.qrViaje;
+        },
+        error: (error) => {
+          console.error('Error al crear viaje:', error);
+        }
+      });
+  
+      // Configurar y dibujar la ruta (opcional)
+      this.directionsRenderer.setMap(null); // Limpiar rutas anteriores
+      const directionsRequest: google.maps.DirectionsRequest = {
+        origin: pos,
+        destination: { lat: destino.lat, lng: destino.lng },
+        travelMode: google.maps.TravelMode.DRIVING,
+      };
+  
+      this.directionsService.route(directionsRequest, (result: google.maps.DirectionsResult | null, status: google.maps.DirectionsStatus) => {
+        if (status === google.maps.DirectionsStatus.OK && result) {
+          this.directionsRenderer.setDirections(result);
+          this.directionsRenderer.setMap(this.map);
+        } else {
+          console.error('Error fetching directions', result);
+        }
+      });
+    } else {
+      console.log('Please select both start and destination locations.');
+    }
+  }
+  
 
   getOpcionesDestino() {
     return this.ubicaciones.filter(ubicacion => ubicacion.value !== this.ubicacionInicio);

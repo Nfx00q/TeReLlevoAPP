@@ -5,7 +5,10 @@ export interface Viajes {
     inicio?: string;
     final?: string;
     fecha?: string; 
-    nom_pasajero?: string;
     coordenada?: string;
     coordenada_destino?: string;
+
+    driverName?: string; // Agregar este campo
+    driverRut?: string;   // Agregar más campos si es necesario
+    driverImg?: string;   // Por ejemplo, imagen del conductor
 }
