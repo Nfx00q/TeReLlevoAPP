@@ -3,6 +3,7 @@ import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { finalize, Observable } from 'rxjs';
 import { AngularFireStorage } from '@angular/fire/compat/storage';
+import { Usuario } from '../interfaces/usuario';
 
 @Injectable({
   providedIn: 'root'
@@ -15,12 +16,12 @@ export class AuthServiceService {
     private storage: AngularFireStorage
   ){}
 
-  getUsers(): Observable<any[]> {
-    return this.firestore.collection('usuarios').valueChanges();
+  getUsers(): Observable<Usuario[]> { // Cambiar a Usuario[]
+    return this.firestore.collection<Usuario>('usuarios').valueChanges();
   }
 
-  getUserData(uid: string): Observable<any> {
-    return this.firestore.collection('usuarios').doc(uid).valueChanges();
+  getUserData(uid: string): Observable<Usuario | undefined> { // Cambiar a Usuario | undefined
+    return this.firestore.collection<Usuario>('usuarios').doc(uid).valueChanges();
   }
 
   getCurrentUser() {
@@ -31,10 +32,15 @@ export class AuthServiceService {
     await this.firestore.collection('usuarios').doc(usuarioId).update(updatedData);
   }
 
-  deleteUser(uid: string) {
-    return this.firestore.collection('usuarios').doc(uid).update({ disabled: true });
+  async deleteUser(uid: string): Promise<void> {
+    try {
+      await this.firestore.collection('usuarios').doc(uid).update({ disabled: true });
+    } catch (error) {
+      console.error('Error deshabilitando el usuario:', error);
+      throw new Error('Error al deshabilitar el usuario'); // Manejo de error más específico
+    }
   }
-
+  
   login(email: string, pass: string) {
     return this.angularFireAuth.signInWithEmailAndPassword(email, pass);
   }
