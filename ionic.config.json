@@ -1,0 +1,7 @@
+{
+  "name": "TeReLlevoAPP",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "angular"
+}
