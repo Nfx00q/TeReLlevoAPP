@@ -70,9 +70,14 @@
                 <ion-icon name="close-circle-outline"></ion-icon>
               </ion-button>
             </ion-col>
+            <ion-col>
+              <div *ngIf="qrData" style="text-align: center; z-index: 100;">
+                <h3>Escanea para unirte al viaje:</h3>
+                <ngx-qrcode [qrc-value]="qrData" [size]="256" [level]="'M'"></ngx-qrcode>
+              </div>                              
+            </ion-col>
           </ion-row>
         </ion-grid>
-        
       </ion-content>
     </ng-template>
   </ion-modal>

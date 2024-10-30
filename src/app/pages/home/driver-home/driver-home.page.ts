@@ -3,8 +3,11 @@ import { Router } from '@angular/router';
 import { Geolocation } from '@capacitor/geolocation';
 import { AngularFirestore } from '@angular/fire/compat/firestore'
 import { Usuario } from 'src/app/interfaces/usuario';
+
 import { Viajes } from 'src/app/interfaces/viajes';
 import { ViajesService } from 'src/app/services/viajes.service';
+
+import { QRCodeModule } from 'angularx-qrcode';
 
 declare var google: any;
 
@@ -51,7 +54,8 @@ export class DriverPage implements OnInit, AfterViewInit {
   constructor(
     private router: Router,
     private firestore: AngularFirestore,
-    private viajesService: ViajesService) { }
+    private viajesService: ViajesService,
+    private NgxQrCodeModule: QRCodeModule) { }
 
   ngAfterViewInit(){}
 
@@ -136,36 +140,36 @@ export class DriverPage implements OnInit, AfterViewInit {
       this.ubicacionDestino = null;
     }
   }
-  
+
   async startTrip() {
     const inicio = this.ubicaciones.find((ubicacion) => ubicacion.value === this.ubicacionInicio);
     const destino = this.ubicaciones.find((ubicacion) => ubicacion.value === this.ubicacionDestino);
-    
+  
     if (inicio && destino) {
       const currentPosition = await Geolocation.getCurrentPosition();
       const pos = { lat: currentPosition.coords.latitude, lng: currentPosition.coords.longitude };
   
       const codigoViaje = this.viajesService.generarCodigoUnico();
-
       const driverName = `${this.nombreUsuario || 'Desconocido'} ${this.apellidoUsuario || ''}`.trim();
   
       const viaje: Viajes = {
         codigo: codigoViaje,
         nom_inicio: inicio.label || '',
         nom_destino: destino.label || '',
-        inicio: `${pos.lat},${pos.lng}`, 
+        inicio: `${pos.lat},${pos.lng}`,
         fecha: new Date().toISOString(),
-        coordenada: `${pos.lat},${pos.lng}`, 
+        coordenada: `${pos.lat},${pos.lng}`,
         coordenada_destino: `${destino.lat},${destino.lng}`,
-        driverName: driverName 
-      };      
+        driverName: driverName
+      };
   
+      // Crea el viaje y obtiene el UID del documento
       this.viajesService.crearViaje(viaje).subscribe({
-        next: (docId) => {
-          console.log('Viaje creado con ID:', docId);
-          this.codigoViaje = codigoViaje;
-          this.qrViaje = codigoViaje;
-          this.qrData = this.qrViaje;
+        next: (uid) => {
+          console.log('Viaje creado con UID:', uid);
+          this.codigoViaje = uid;  // Asigna el UID a `codigoViaje`
+          this.qrData = `https://tuapp.com/viaje/${uid}`; // Asegúrate de que esto sea un URL válido
+          console.log('QR Data:', this.qrData); // Verifica que qrData esté bien
         },
         error: (error) => {
           console.error('Error al crear viaje:', error);
@@ -185,13 +189,14 @@ export class DriverPage implements OnInit, AfterViewInit {
           this.directionsRenderer.setDirections(result);
           this.directionsRenderer.setMap(this.map);
         } else {
-          console.error('Error fetching directions', result);
+          console.error('Error obteniendo direcciones', result);
         }
       });
     } else {
-      console.log('Please select both start and destination locations.');
+      console.log('Por favor selecciona una ubicación de inicio y destino.');
     }
   }
+  
   
 
   getOpcionesDestino() {

@@ -12,6 +12,8 @@ import { AngularFirestoreModule } from '@angular/fire/compat/firestore';
 import { AngularFireAuthModule } from '@angular/fire/compat/auth';
 import { AngularFireStorageModule } from '@angular/fire/compat/storage';
 
+import { QRCodeModule } from 'angularx-qrcode';
+
 @NgModule({
   declarations: [AppComponent],
   imports: [BrowserModule, IonicModule.forRoot(), 
@@ -20,9 +22,10 @@ import { AngularFireStorageModule } from '@angular/fire/compat/storage';
   AngularFireModule,
   AngularFireAuthModule,
   AppRoutingModule,
-  AngularFireStorageModule
+  AngularFireStorageModule,
+  QRCodeModule
 ],
   providers: [{ provide: RouteReuseStrategy, useClass: IonicRouteStrategy }],
-  bootstrap: [AppComponent],
+  bootstrap: [AppComponent, QRCodeModule],
 })
 export class AppModule {}

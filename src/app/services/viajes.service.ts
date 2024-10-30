@@ -1,6 +1,6 @@
 import { Injectable } from '@angular/core';
 import { Viajes } from '../interfaces/viajes';
-import { Observable } from 'rxjs';
+import { from, map, Observable } from 'rxjs';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
 
 @Injectable({
@@ -12,18 +12,11 @@ export class ViajesService {
 
   constructor(private firestore: AngularFirestore) {}
 
-  // Crear un nuevo viaje
-  crearViaje(viaje: Viajes): Observable<any> {
-    return new Observable((observer) => {
-      this.viajesCollection.add(viaje)
-        .then((docRef) => {
-          observer.next(docRef.id); // Enviar el ID del documento al suscriptor
-          observer.complete(); // Completar el observable
-        })
-        .catch((error) => {
-          observer.error(error); // Manejar cualquier error
-        });
-    });
+  crearViaje(viaje: Viajes): Observable<string> {
+    const viajeRef = this.firestore.collection('viajes').add(viaje);
+    return from(viajeRef).pipe(
+      map((docRef) => docRef.id)  // Retorna el UID del documento creado
+    );
   }
 
   // Obtener un viaje por código
