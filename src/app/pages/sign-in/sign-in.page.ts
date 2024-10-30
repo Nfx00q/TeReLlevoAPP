@@ -3,6 +3,8 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { FormBuilder, FormGroup, Validators } from '@angular/forms';
 import { Router } from '@angular/router';
 import { MenuController, ToastController } from '@ionic/angular';
+import axios from 'axios';
+import { Usuario } from 'src/app/interfaces/usuario';
 import { AuthServiceService } from 'src/app/services/auth-service.service';
 import Swal from 'sweetalert2';
 
@@ -106,5 +108,64 @@ export class SignInPage implements OnInit {
   setAccountType(type: string) {
     this.tipoCuenta = type;
     this.registerForm.controls['tipoCuenta'].setValue(type);
+  }
+
+  /* ------ CREATE RANDOM USER -------- */
+
+  async generateRandomUsers(count: number) {
+    try {
+      const response = await axios.get(`https://randomuser.me/api/?results=${count}`);
+      const users: Usuario[] = response.data.results.map((user: any) => { // Aquí se define el tipo `any`
+        // Generar un role aleatorio
+        const roles: Usuario['role'][] = ["usuario", "conductor", "admin"];
+        const randomRole = roles[Math.floor(Math.random() * roles.length)];
+  
+        return {
+          nombre: user.name.first,
+          apellido: user.name.last,
+          rut: user.id.value, // Suponiendo que la API devuelve un valor de RUT
+          telefono: user.phone,
+          edad: this.calculateAge(user.dob.date), // Calcular edad a partir de la fecha de nacimiento
+          role: randomRole,
+          email: user.email,
+          pass: 'defaultPassword', // Puedes generar una contraseña aleatoria si lo deseas
+          tipo: randomRole, // Puedes asignar el mismo valor que role, si así lo deseas
+          disabled: false, // Por defecto, deshabilitado en false
+        };
+      });
+  
+      this.saveUsersToFirebase(users);
+    } catch (error) {
+      console.error('Error al obtener usuarios: ', error);
+    }
+  }  
+
+  saveUsersToFirebase(users: Usuario[]) {
+    const batch = this.firestore.firestore.batch();
+  
+    users.forEach(user => {
+      const userRef = this.firestore.collection('usuarios').doc().ref; // Usar .ref para obtener DocumentReference
+      batch.set(userRef, user);
+    });
+  
+    batch.commit()
+      .then(() => {
+        console.log('Usuarios guardados exitosamente');
+      })
+      .catch(error => {
+        console.error('Error al guardar usuarios: ', error);
+      });
+  }
+  
+
+  calculateAge(birthdate: string): string {
+    const birth = new Date(birthdate);
+    const today = new Date();
+    let age = today.getFullYear() - birth.getFullYear();
+    const m = today.getMonth() - birth.getMonth();
+    if (m < 0 || (m === 0 && today.getDate() < birth.getDate())) {
+      age--;
+    }
+    return age.toString(); // Retorna la edad como string
   }
 }
