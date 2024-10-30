@@ -25,41 +25,36 @@
         <ion-fab-button color="dark" (click)="goToConfig()">
           <ion-icon name="settings-outline"></ion-icon>
         </ion-fab-button>
-        <ion-fab-button color="dark" id="op-modal-2">
-          <ion-icon name="person"></ion-icon>
+        <ion-fab-button color="dark">
+          <ion-icon name="book-outline"></ion-icon>
         </ion-fab-button>
         <ion-fab-button color="dark" id="op-modal">
-          <ion-icon name="scan-outline"></ion-icon>
+          <ion-icon name="trail-sign-outline"></ion-icon>
         </ion-fab-button>
       </ion-fab-list>
     </ion-fab>
 
   </body>
 
-  <ion-modal #modal trigger="op-modal" [initialBreakpoint]="0.32" [breakpoints]="[0.8]" class="iniciarViaje">
+  <ion-modal #modal trigger="op-modal" [initialBreakpoint]="0.6" [breakpoints]="[0.8]">
     <ng-template>
       <ion-content>
         <h1 style="text-align: center;">Escanear viaje</h1>
-        <p>Presiona Escanear QR para escanear un <br>viaje creado por un conductor.</p>
+        <p>Presiona Escanear QR para escanear un viaje creado por algún conductor.</p>
   
         <ion-grid>
           <ion-row>
             <ion-col>
               <ion-button expand="block" color="light">
                 Escanear QR
+                <ion-icon slot="start" name="scan-outline"></ion-icon>
               </ion-button>
             </ion-col>
           </ion-row>
         </ion-grid>
-        
-      </ion-content>
-    </ng-template>
-  </ion-modal>
 
-  <ion-modal #modal trigger="op-modal-2" [initialBreakpoint]="0.32" [breakpoints]="[0.8]" class="driversDisponibles">
-    <ng-template>
-      <ion-content>
-        <h1 style="text-align: center;">Conductores disponibles</h1>
+        <div id="reader" style="width: 300px; height: 300px;"></div>
+        
       </ion-content>
     </ng-template>
   </ion-modal>
