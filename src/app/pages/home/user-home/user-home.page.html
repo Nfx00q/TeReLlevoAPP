@@ -1,0 +1,62 @@
+<ion-content [fullscreen]="true">
+  <head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <!-- Google MAP Script -->
+
+    <script async defer
+      src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAp4tplN5KEmKIHOV4vyFXuS6KKFsJqESg">
+    </script>
+    
+    <script async defer src="https://maps.googleapis.com/maps/api/js?key=AIzaSyAp4tplN5KEmKIHOV4vyFXuS6KKFsJqESg&libraries=places"></script>
+    
+  </head>
+
+  <body>
+
+    <div id="map" class="map"></div>
+
+    <ion-fab slot="fixed" vertical="bottom" horizontal="start">
+      <ion-fab-button color="dark">
+        <ion-icon name="add"></ion-icon>
+      </ion-fab-button>
+      <ion-fab-list side="top">
+        <ion-fab-button color="dark" (click)="goToConfig()">
+          <ion-icon name="settings-outline"></ion-icon>
+        </ion-fab-button>
+        <ion-fab-button color="dark">
+          <ion-icon name="book-outline"></ion-icon>
+        </ion-fab-button>
+        <ion-fab-button color="dark" id="op-modal">
+          <ion-icon name="trail-sign-outline"></ion-icon>
+        </ion-fab-button>
+      </ion-fab-list>
+    </ion-fab>
+
+  </body>
+
+  <ion-modal #modal trigger="op-modal" [initialBreakpoint]="0.6" [breakpoints]="[0.8]">
+    <ng-template>
+      <ion-content>
+        <h1 style="text-align: center;">Escanear viaje</h1>
+        <p>Presiona Escanear QR para escanear un viaje creado por un pasajero.</p>
+  
+        <ion-grid>
+          <ion-row>
+            <ion-col>
+              <ion-button expand="block" color="light">
+                Escanear QR
+                <ion-icon slot="start" name="scan-outline"></ion-icon>
+              </ion-button>
+            </ion-col>
+          </ion-row>
+        </ion-grid>
+
+        <div id="reader" style="width: 300px; height: 300px;"></div>
+        
+      </ion-content>
+    </ng-template>
+  </ion-modal>
+  
+</ion-content>
