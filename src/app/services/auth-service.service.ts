@@ -1,10 +1,12 @@
 import { Injectable } from '@angular/core';
 import { AngularFireAuth } from '@angular/fire/compat/auth';
 import { AngularFirestore } from '@angular/fire/compat/firestore';
-import { finalize, Observable } from 'rxjs';
+import { Observable } from 'rxjs';
 import { AngularFireStorage } from '@angular/fire/compat/storage';
 import { Usuario } from '../interfaces/usuario';
 import { Router } from '@angular/router';
+
+import { finalize } from 'rxjs/operators';
 
 @Injectable({
   providedIn: 'root'
