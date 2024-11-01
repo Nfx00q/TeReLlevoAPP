@@ -9,3 +9,9 @@ declare global {
       googleMapsCallback: () => void;
     }
 }
+
+declare global {
+  interface Window {
+    cordova: any; // Puedes usar 'any' o ser más específico si conoces el tipo
+  }
+}

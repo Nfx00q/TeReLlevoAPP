@@ -45,16 +45,28 @@
         <ion-grid>
           <ion-row>
             <ion-col>
-              <ion-button expand="block" color="light">
+              <ion-button expand="block" color="light" (click)="scanQr()">
                 Escanear QR
                 <ion-icon slot="start" name="scan-outline"></ion-icon>
               </ion-button>
             </ion-col>
           </ion-row>
         </ion-grid>
-
-        <div id="reader" style="width: 300px; height: 300px;"></div>
-        
+  
+        <!-- Muestra la información del viaje aquí -->
+        <div *ngIf="viajeData">
+          <h2>Detalles del Viaje</h2>
+          <p><strong>Destino:</strong> {{ viajeData.nom_destino }}</p>
+          <p><strong>Inicio:</strong> {{ viajeData.nom_inicio }}</p>
+          <p><strong>Fecha:</strong> {{ viajeData.fecha }}</p>
+          <p><strong>Pasajero:</strong> {{ viajeData.nom_pasajero }}</p>
+          <p><strong>Coordenadas:</strong> {{ viajeData.coordenada }}</p>
+          <p><strong>Coordenadas Destino:</strong> {{ viajeData.coordenada_destino }}</p>
+        </div>
+  
+        <div *ngIf="!viajeData">
+          <p>No se encontró información sobre el viaje.</p>
+        </div>
       </ion-content>
     </ng-template>
   </ion-modal>
@@ -87,8 +99,7 @@
               </ion-item-options>
             </ion-item-sliding>
           </ng-container>
-        </ion-list>                      
-        
+        </ion-list>
       </ion-content>
     </ng-template>
   </ion-modal>

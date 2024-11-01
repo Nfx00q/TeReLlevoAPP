@@ -5,7 +5,6 @@ import { Observable } from 'rxjs';
 import { AngularFireStorage } from '@angular/fire/compat/storage';
 import { Usuario } from '../interfaces/usuario';
 import { Router } from '@angular/router';
-
 import { finalize } from 'rxjs/operators';
 
 @Injectable({

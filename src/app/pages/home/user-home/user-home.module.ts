@@ -7,6 +7,7 @@ import { IonicModule } from '@ionic/angular';
 import { UserHomePageRoutingModule } from './user-home-routing.module';
 
 import { UserHomePage } from '../user-home/user-home.page';
+import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 
 @NgModule({
   imports: [
@@ -15,6 +16,10 @@ import { UserHomePage } from '../user-home/user-home.page';
     IonicModule,
     UserHomePageRoutingModule
   ],
-  declarations: [ UserHomePage ]
+  declarations: [ UserHomePage ],
+  providers: [
+    BarcodeScanner,
+    // otros proveedores
+  ],
 })
 export class UserHomePageModule {}
