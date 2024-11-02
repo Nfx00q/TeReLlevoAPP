@@ -4,10 +4,11 @@ import { AngularFirestore } from '@angular/fire/compat/firestore';
 import { Usuario } from 'src/app/interfaces/usuario';
 import { Geolocation } from '@capacitor/geolocation';
 import { Router } from '@angular/router';
-import { BarcodeScanner } from '@awesome-cordova-plugins/barcode-scanner/ngx';
 import Swal from 'sweetalert2';
 import { Viajes } from 'src/app/interfaces/viajes';
 
+/* SCANNER DE QR */
+import { BarcodeScanner } from '@capacitor-mlkit/barcode-scanning';
 
 declare var google: any;
 
@@ -34,7 +35,7 @@ export class UserHomePage implements OnInit {
 
   /* SCANNER QR */
 
-  viajeData: any;
+  viajeInfo: Viajes | null = null
 
   ubicaciones = [
     { lat: -33.598425578019224, lng: -70.57833859675443, icon: 'assets/icon/instituto.png', label: 'Cede Puente Alto', value: 'puente_alto' },
@@ -46,8 +47,7 @@ export class UserHomePage implements OnInit {
 
   constructor(
     private firestore: AngularFirestore, 
-    private router: Router,
-    private BarcodeScanner: BarcodeScanner
+    private router: Router
   ) { }
 
   ngOnInit() {
@@ -68,8 +68,6 @@ export class UserHomePage implements OnInit {
       console.error('Error al cargar usuarios:', error);
     }
   }
-
-  /* ----- SCANEO QR ----- */
 
   async initMap() {
     const mapOptions = {
@@ -180,50 +178,18 @@ export class UserHomePage implements OnInit {
 
   /* -------- SCANNER DE QR -------- */
 
-  async scanQr() {
-    if (this.isCordovaAvailable()) {
-      try {
-        const barcodeData = await this.BarcodeScanner.scan();
-        console.log('Código QR escaneado', barcodeData.text);
-        
-        // Buscar el viaje en Firestore
-        this.fetchViaje(barcodeData.text);
-      } catch (err) {
-        console.error('Error al escanear QR', err);
-      }
-    } else {
-      console.warn('Cordova no está disponible. Simulando escaneo de QR...');
-      this.simulateQrScan();
-    }
-  }
+  async scanQRCode() {
+    const result = await BarcodeScanner.scan();
+    const qrCode = result.barcodes[0].rawValue; // Asegúrate de que 'barcodes[0].rawValue' es la propiedad correcta
 
-  private isCordovaAvailable(): boolean {
-    return !!window.cordova; // Verifica si Cordova está disponible
+    this.firestore.collection('Viajes', ref => ref.where('codigo', '==', qrCode))
+      .get()
+      .subscribe(querySnapshot => {
+        if (!querySnapshot.empty) {
+          this.viajeInfo = querySnapshot.docs[0].data() as Viajes; // Especifica el tipo de dato
+        } else {
+          this.viajeInfo = null;
+        }
+      });
   }
-
-  private simulateQrScan() {
-    // Simula un código QR escaneado
-    const simulatedData = { text: 'ID_DEL_VIAJE_SIMULADO' };
-    console.log('Código QR simulado', simulatedData.text);
-    this.fetchViaje(simulatedData.text); // Usar el ID simulado para buscar el viaje
-  }
-
-  private fetchViaje(codigo: string) {
-    const viajeRef = this.firestore.collection<Viajes>('Viajes', ref => ref.where('codigo', '==', codigo));
-    
-    viajeRef.get().subscribe(snapshot => {
-      if (snapshot.empty) {
-        console.log('No se encontró el viaje');
-        this.viajeData = null; // Si no hay viaje, restablece la variable
-      } else {
-        snapshot.forEach(doc => {
-          this.viajeData = doc.data() as Viajes; // Asigna los datos del viaje a la variable
-          console.log('Viaje encontrado:', this.viajeData);
-        });
-      }
-    }, error => {
-      console.error('Error al obtener el viaje', error);
-    });
-  }
-  
 }

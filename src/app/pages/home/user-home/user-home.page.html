@@ -1,5 +1,7 @@
 <ion-content [fullscreen]="true">
+  
   <head>
+
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
 
@@ -39,33 +41,33 @@
   <ion-modal #modal trigger="op-modal" [initialBreakpoint]="0.6" [breakpoints]="[0.8]" class="iniciarViaje">
     <ng-template>
       <ion-content>
-        <h1 style="text-align: center;">Escanear viaje</h1>
-        <p>Presiona Escanear QR para escanear un viaje creado por algún conductor.</p>
-  
-        <ion-grid>
-          <ion-row>
-            <ion-col>
-              <ion-button expand="block" color="light" (click)="scanQr()">
-                Escanear QR
-                <ion-icon slot="start" name="scan-outline"></ion-icon>
-              </ion-button>
-            </ion-col>
-          </ion-row>
-        </ion-grid>
-  
-        <!-- Muestra la información del viaje aquí -->
-        <div *ngIf="viajeData">
-          <h2>Detalles del Viaje</h2>
-          <p><strong>Destino:</strong> {{ viajeData.nom_destino }}</p>
-          <p><strong>Inicio:</strong> {{ viajeData.nom_inicio }}</p>
-          <p><strong>Fecha:</strong> {{ viajeData.fecha }}</p>
-          <p><strong>Pasajero:</strong> {{ viajeData.nom_pasajero }}</p>
-          <p><strong>Coordenadas:</strong> {{ viajeData.coordenada }}</p>
-          <p><strong>Coordenadas Destino:</strong> {{ viajeData.coordenada_destino }}</p>
+        <ion-button (click)="scanQRCode()" size="block" color="light" style="margin: 10px; margin-top: 20px;">
+          <ion-icon name="scan-outline" style="padding-right: 10px;"></ion-icon>
+          Escanear QR
+        </ion-button>
+        
+        <div *ngIf="viajeInfo">
+          <ion-list>
+            <ion-item>
+              <ion-label>Destino: {{ viajeInfo.nom_destino }}</ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-label>Inicio: {{ viajeInfo.nom_inicio }}</ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-label>Fecha: {{ viajeInfo.fecha }}</ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-label>Pasajero: {{ viajeInfo.nom_pasajero }}</ion-label>
+            </ion-item>
+            <ion-item>
+              <ion-label>Coordenadas: {{ viajeInfo.coordenada }} - {{ viajeInfo.coordenada_destino }}</ion-label>
+            </ion-item>
+          </ion-list>
         </div>
-  
-        <div *ngIf="!viajeData">
-          <p>No se encontró información sobre el viaje.</p>
+        
+        <div *ngIf="!viajeInfo">
+          <p>No se encontró información del viaje.</p>
         </div>
       </ion-content>
     </ng-template>
